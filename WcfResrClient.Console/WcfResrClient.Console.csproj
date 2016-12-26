@@ -39,7 +39,6 @@
     <Reference Include="System.ServiceModel.Web" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseUriProcessor.cs" />
     <Compile Include="IFoo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

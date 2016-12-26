@@ -1,5 +1,6 @@
 ﻿using System;
 using WcfRestClient;
+using WcfRestClient.Core;
 
 namespace WcfResrClient.Console
 {

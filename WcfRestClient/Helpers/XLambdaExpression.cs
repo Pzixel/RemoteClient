@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 
 namespace WcfRestClient.Helpers
 {
-    public static class XLambdaExpression
+    internal static class XLambdaExpression
     {
         public static MethodInfo CompileToInstanceMethod(this LambdaExpression expression, TypeBuilder tb, string methodName, MethodAttributes attributes)
         {

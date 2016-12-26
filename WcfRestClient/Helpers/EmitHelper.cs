@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 
 namespace WcfRestClient.Helpers
 {
-    public static class EmitHelper
+    internal static class EmitHelper
     {
         /// <summary>Creates one constructor for each public constructor in the base class. Each constructor simply
         /// forwards its arguments to the base constructor, and matches the base constructor's signature.

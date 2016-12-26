@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace WcfRestClient
+namespace WcfRestClient.Core
 {
     [Serializable]
     public class ClientGenerationException : Exception

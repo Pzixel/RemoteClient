@@ -4,11 +4,14 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.ServiceModel.Web;
+using WcfRestClient.Core;
 
 namespace WcfRestClient.Helpers
 {
     internal static class ReflectionHelper
     {
+        public static MethodInfo DisposeMethod { get; } = typeof (IDisposable).GetMethod("Dispose");
+
         public static ModuleBuilder Builder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("ServiceClientFactoryAssembly"), AssemblyBuilderAccess.Run)
                                                              .DefineDynamicModule("MainModule");
 

@@ -1,4 +1,4 @@
-﻿namespace WcfRestClient
+﻿namespace WcfRestClient.Core
 {
     internal struct WcfOperationDescriptor
     {
