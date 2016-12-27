@@ -17,7 +17,7 @@ namespace WcfRestClient.Test
             var manager = new ServiceManager();
             manager.RunAll(baseAddress);
 
-            const string testString = "My Super String";
+            const string testString = "My Super String+3:00+15=3:15";
             var dt = DateTime.UtcNow;
 
             using (var client = SampleClient.New(baseAddress))
@@ -30,7 +30,10 @@ namespace WcfRestClient.Test
                 Assert.AreEqual(message.Item1, "Hello " + testString);
                 Assert.AreEqual(message.Item2.Count, 100);
                 Assert.IsTrue(message.Item2.All(x => x != Guid.Empty));
-                Assert.AreEqual(firstDate, dt);
+                Assert.AreEqual(firstDate.Date, dt.Date);
+                Assert.AreEqual(firstDate.Hour, dt.Hour);
+                Assert.AreEqual(firstDate.Minute, dt.Minute);
+                Assert.AreEqual(firstDate.Second, dt.Second);
             }
             manager.CloseAll();
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace WcfRestClient.Helpers
@@ -19,7 +20,7 @@ namespace WcfRestClient.Helpers
             var sb = new StringBuilder(template);
             foreach (var pair in dictionary)
             {
-                string stringifiedValue = Convert.ToString(pair.Value, LibraryCulture.CultureInfo);
+                string stringifiedValue = Convert.ToString(pair.Value, CultureInfo.InvariantCulture);
                 sb.Replace("{" + pair.Key + "}", stringifiedValue);
             }
             return sb.ToString();
