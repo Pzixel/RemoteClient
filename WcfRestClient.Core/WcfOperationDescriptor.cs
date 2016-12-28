@@ -2,7 +2,7 @@
 
 namespace WcfRestClient.Core
 {
-    public struct WcfOperationDescriptor : IWcfOperationDescriptor
+    internal struct WcfOperationDescriptor : IWcfOperationDescriptor
     {
         public string UriTemplate { get; }
         public string Method { get; }
