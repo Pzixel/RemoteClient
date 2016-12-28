@@ -4,22 +4,22 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace WcfRestClient.Helpers
+namespace WcfRestClient.Utils
 {
     public static class NewtonsoftInterop
     {
         public static readonly Encoding JsonEncoding = new UTF8Encoding(false);
-        private static readonly JsonSerializer _serializer;
+        private static readonly JsonSerializer Serializer;
 
         static NewtonsoftInterop()
         {
-            _serializer = new JsonSerializer
+            Serializer = new JsonSerializer
             {
                 TypeNameHandling = TypeNameHandling.Auto,
                 MissingMemberHandling = MissingMemberHandling.Ignore,
                 NullValueHandling = NullValueHandling.Ignore,
                 DefaultValueHandling = DefaultValueHandling.Ignore,
-                DateFormatString = LibraryCulture.DatetimeFormat
+                DateFormatString = "yyyy-MM-ddTHH:mm:ss.fffzzz"
             };
         }
 
@@ -28,7 +28,7 @@ namespace WcfRestClient.Helpers
             var stringWriter = new StringWriter(new StringBuilder(256), CultureInfo.InvariantCulture);
             using (var jsonTextWriter = new JsonTextWriter(stringWriter))
             {
-                _serializer.Serialize(jsonTextWriter, value);
+                Serializer.Serialize(jsonTextWriter, value);
             }
             return stringWriter.ToString();
         }
@@ -47,7 +47,7 @@ namespace WcfRestClient.Helpers
             using (var sw = new StreamWriter(stream, JsonEncoding))
             using (var writer = new JsonTextWriter(sw))
             {
-                _serializer.Serialize(writer, value);
+                Serializer.Serialize(writer, value);
                 sw.Flush();
             }
         }
@@ -56,7 +56,7 @@ namespace WcfRestClient.Helpers
         {
             using (var jsonTextReader = new JsonTextReader(new StringReader(value)))
             {
-                return (T) _serializer.Deserialize(jsonTextReader, typeof (T));
+                return (T) Serializer.Deserialize(jsonTextReader, typeof (T));
             }
         }
 
@@ -75,7 +75,7 @@ namespace WcfRestClient.Helpers
 
         public static object DeserializeFromReader(JsonReader reader, Type objectType)
         {
-            return _serializer.Deserialize(reader, objectType);
+            return Serializer.Deserialize(reader, objectType);
         }
 
         public static T DeserializeFromStream<T>(Stream stream)

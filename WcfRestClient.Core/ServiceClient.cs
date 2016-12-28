@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
-using WcfRestClient.Helpers;
+using WcfRestClient.Core.Helpers;
 
 namespace WcfRestClient.Core
 {

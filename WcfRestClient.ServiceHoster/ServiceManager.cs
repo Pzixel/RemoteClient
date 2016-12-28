@@ -6,8 +6,8 @@ using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.ServiceModel.Web;
 using System.Xml;
-using WcfRestClient.Helpers;
 using WcfRestClient.ServiceHoster.Dispatch;
+using WcfRestClient.Utils;
 
 namespace WcfRestClient.ServiceHoster
 {
@@ -105,11 +105,6 @@ namespace WcfRestClient.ServiceHoster
                 }
 
                 ServiceHost.Open();
-
-                foreach (var endpoint in ServiceHost.Description.Endpoints)
-                {
-                    Console.WriteLine($"{endpoint.Address} ({endpoint.Name})");
-                }
             }
         }
 

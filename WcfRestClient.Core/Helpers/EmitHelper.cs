@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace WcfRestClient.Helpers
+namespace WcfRestClient.Core.Helpers
 {
     internal static class EmitHelper
     {

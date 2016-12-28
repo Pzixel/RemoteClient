@@ -1,6 +1,6 @@
 using System;
 
-namespace WcfRestClient.Helpers
+namespace WcfRestClient.Utils
 {
     public static class UriExtension
     {

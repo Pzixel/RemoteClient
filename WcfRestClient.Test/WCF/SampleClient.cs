@@ -1,5 +1,5 @@
 ﻿using System;
-using WcfRestClient.Test.WCF.Common;
+using WcfRestClient.Client;
 
 namespace WcfRestClient.Test.WCF
 {

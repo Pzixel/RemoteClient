@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace WcfRestClient.Helpers
+namespace WcfRestClient.Utils
 {
     public static class WcfUri
     {

@@ -4,9 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.ServiceModel.Web;
-using WcfRestClient.Core;
 
-namespace WcfRestClient.Helpers
+namespace WcfRestClient.Core.Helpers
 {
     internal static class ReflectionHelper
     {

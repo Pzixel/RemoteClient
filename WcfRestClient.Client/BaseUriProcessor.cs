@@ -4,9 +4,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using WcfRestClient.Core;
-using WcfRestClient.Helpers;
+using WcfRestClient.Utils;
 
-namespace WcfRestClient.Test.WCF.Common
+namespace WcfRestClient.Client
 {
     internal class BaseUriProcessor : IAsyncRequestProcessor
     {

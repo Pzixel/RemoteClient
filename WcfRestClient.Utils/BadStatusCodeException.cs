@@ -2,7 +2,7 @@
 using System.Net;
 using System.Runtime.Serialization;
 
-namespace WcfRestClient
+namespace WcfRestClient.Utils
 {
     [Serializable]
     public class BadStatusCodeException : Exception

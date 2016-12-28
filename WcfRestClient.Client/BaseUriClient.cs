@@ -1,10 +1,10 @@
 ﻿using System;
 using WcfRestClient.Core;
-using WcfRestClient.Helpers;
+using WcfRestClient.Utils;
 
-namespace WcfRestClient.Test.WCF.Common
+namespace WcfRestClient.Client
 {
-    internal static class BaseUriClient<T> where T : IDisposable
+    public static class BaseUriClient<T> where T : IDisposable
     {
         public static T New(Uri baseUri, string baseSubUri, TimeSpan? timeout)
         {

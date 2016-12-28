@@ -41,11 +41,6 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -65,9 +60,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WcfRestClient\WcfRestClient.csproj">
-      <Project>{ee53e36b-20ed-4911-8449-97391cc5c991}</Project>
-      <Name>WcfRestClient</Name>
+    <ProjectReference Include="..\WcfRestClient.Utils\WcfRestClient.Utils.csproj">
+      <Project>{09737A6C-B407-471C-B81B-27621468C969}</Project>
+      <Name>WcfRestClient.Utils</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

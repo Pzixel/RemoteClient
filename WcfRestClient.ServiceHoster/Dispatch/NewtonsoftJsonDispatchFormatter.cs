@@ -8,8 +8,8 @@ using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 using System.ServiceModel.Web;
 using Newtonsoft.Json;
-using WcfRestClient.Helpers;
 using WcfRestClient.ServiceHoster.Extensions;
+using WcfRestClient.Utils;
 
 namespace WcfRestClient.ServiceHoster.Dispatch
 {

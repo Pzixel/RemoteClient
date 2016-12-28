@@ -1,15 +1,14 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using NLog;
 
-namespace WcfRestClient.Helpers
+namespace WcfRestClient.Utils
 {
     public sealed class RestClient : IDisposable
     {
         private readonly HttpClient _client;
-        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private static long _requestId;
 
         public RestClient(Uri baseUri, TimeSpan? timeout = null)
@@ -77,7 +76,7 @@ namespace WcfRestClient.Helpers
         private async Task<T> SendAsync<T>(HttpMethod method, Uri uri, object body, bool deserializeResponse)
         {
             long requestId = Interlocked.Increment(ref _requestId);
-            Logger.Trace("Preparing to send request #{0}", requestId);
+            Debug.WriteLine("Preparing to send request #{0}", requestId);
             try
             {
                 var message = new HttpRequestMessage(method, uri);
@@ -85,7 +84,7 @@ namespace WcfRestClient.Helpers
                 {
                     message.Content = ToRequestContent(body);
                 }
-                Logger.Trace("Sending request #{0}: {1} {2}{3}, content length: {4}",
+                Debug.WriteLine("Sending request #{0}: {1} {2}{3}, content length: {4}",
                     requestId,
                     message.Method.Method,
                     _client.BaseAddress,
@@ -106,17 +105,17 @@ namespace WcfRestClient.Helpers
             catch (TaskCanceledException) // task is non-cancellable -> if task is cancelled then timeout occured
             {
                 var ex = new TimeoutException($"Specified timeout {_client.Timeout.TotalMilliseconds}ms expired");
-                Logger.Error(ex, "Timeout error in request #{0}, request url '{1}/{2}'", requestId, _client.BaseAddress, uri);
+                Debug.WriteLine("Timeout error in request #{0}, request url '{1}/{2}' : {3}", requestId, _client.BaseAddress, uri, ex);
                 throw ex;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "Error in request #{0}, request url '{1}/{2}'", requestId, _client.BaseAddress, uri);
+                Debug.WriteLine("Error in request #{0}, request url '{1}/{2}' : {3}", requestId, _client.BaseAddress, uri, ex);
                 throw;
             }
             finally
             {
-                Logger.Trace("Request #{0} finished", requestId);
+                Debug.WriteLine("Request #{0} finished", requestId);
             }
         }
 
