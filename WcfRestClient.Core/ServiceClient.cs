@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -14,11 +15,12 @@ namespace WcfRestClient.Core
     /// <typeparam name="T">Client interface. Must be IDisposable in order to properly clean <see cref="IAsyncRequestProcessor"/> parameter</typeparam>
     public static class ServiceClient<T> where T : IDisposable
     {
-        private static readonly Type _clientType = CreateType();
+        [SuppressMessage("ReSharper", "StaticMemberInGenericType")]
+        private static readonly Type ClientType = CreateType();
 
         public static T New(IAsyncRequestProcessor processor)
         {
-            return (T) Activator.CreateInstance(_clientType, processor);
+            return (T) Activator.CreateInstance(ClientType, processor);
         }
 
         private static Type CreateType()
@@ -61,11 +63,12 @@ namespace WcfRestClient.Core
 
         private static void ImplementMethod(TypeBuilder tb, MethodInfo interfaceMethod)
         {
-            var uriTemplate = ReflectionHelper.GetUriTemplate(interfaceMethod);
+            var wcfOperationDescriptor = ReflectionHelper.GetUriTemplate(interfaceMethod);
             var parameters = GetLamdaParameters(interfaceMethod);
             var newDict = Expression.New(typeof(Dictionary<string, object>));
             var uriDict = Expression.Variable(newDict.Type);
             var bodyDict = Expression.Variable(newDict.Type);
+            var descriptorVariable = Expression.Variable(typeof(IWcfOperationDescriptor));
             var dictionaryAdd = newDict.Type.GetMethod("Add");
 
             var body = new List<Expression>(parameters.Length)
@@ -77,17 +80,19 @@ namespace WcfRestClient.Core
 
             for (int i = 1; i < parameters.Length; i++)
             {
-                var dictToAdd = uriTemplate.UriTemplate.Contains("{" + parameters[i].Name + "}") ? uriDict : bodyDict;
+                var dictToAdd = wcfOperationDescriptor.UriTemplate.Contains("{" + parameters[i].Name + "}") ? uriDict : bodyDict;
                 body.Add(Expression.Call(dictToAdd, dictionaryAdd, Expression.Constant(parameters[i].Name, typeof(string)),
                     Expression.Convert(parameters[i], typeof(object))));
             }
 
+            body.Add(Expression.Assign(descriptorVariable, Expression.Convert(GetCreateDesriptorExpression(wcfOperationDescriptor), descriptorVariable.Type)));
+
             var requestMethod = GetRequestMethod(interfaceMethod);
-            body.Add(Expression.Call(Expression.Field(parameters[0], "Processor"), requestMethod, Expression.Constant(uriTemplate.UriTemplate), Expression.Constant(uriTemplate.Method), uriDict, bodyDict));
+            body.Add(Expression.Call(Expression.Field(parameters[0], "Processor"), requestMethod, descriptorVariable, uriDict, bodyDict));
 
             var bodyExpression = Expression.Lambda
                 (
-                    Expression.Block(new[] { uriDict, bodyDict }, body.ToArray()),
+                    Expression.Block(new[] { uriDict, bodyDict, descriptorVariable }, body.ToArray()),
                     parameters
                 );
 
@@ -111,6 +116,16 @@ namespace WcfRestClient.Core
                 parameters[i + 1] = Expression.Parameter(parameterInfos[i].ParameterType, parameterInfos[i].Name);
             }
             return parameters;
+        }
+
+        private static Expression GetCreateDesriptorExpression(WcfOperationDescriptor descriptor)
+        {
+            return Expression.New(typeof(WcfOperationDescriptor).GetConstructors()[0],
+                Expression.Constant(descriptor.UriTemplate),
+                Expression.Constant(descriptor.Method),
+                Expression.Constant(descriptor.BodyStyle),
+                Expression.Constant(descriptor.RequestFormat),
+                Expression.Constant(descriptor.ResponseFormat));
         }
     }
 }

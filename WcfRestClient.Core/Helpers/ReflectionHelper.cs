@@ -19,14 +19,14 @@ namespace WcfRestClient.Core.Helpers
             var webGet = methodInfo.GetCustomAttributes(typeof (WebGetAttribute), true);
             if (webGet.Length > 0)
             {
-                var webGetAttribute = (WebGetAttribute) webGet[0];
-                return new WcfOperationDescriptor(webGetAttribute.UriTemplate, "GET");
+                var getAttribute = (WebGetAttribute) webGet[0];
+                return new WcfOperationDescriptor(getAttribute.UriTemplate, "GET", getAttribute.BodyStyle, getAttribute.RequestFormat, getAttribute.ResponseFormat);
             }
             var webInvoke = methodInfo.GetCustomAttributes(typeof (WebInvokeAttribute), true);
             if (webInvoke.Length > 0)
             {
-                var webInvokeAttribute = (WebInvokeAttribute) webInvoke[0];
-                return new WcfOperationDescriptor(webInvokeAttribute.UriTemplate, webInvokeAttribute.Method);
+                var invokeAttribute = (WebInvokeAttribute) webInvoke[0];
+                return new WcfOperationDescriptor(invokeAttribute.UriTemplate, invokeAttribute.Method, invokeAttribute.BodyStyle, invokeAttribute.RequestFormat, invokeAttribute.ResponseFormat);
             }
             throw new ArgumentException("Method doesn't have WebGet or WebInvoke attribute");
         }
