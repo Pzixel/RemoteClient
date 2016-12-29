@@ -28,10 +28,10 @@ namespace WcfRestClient.Core.Helpers
                 var optionalCustomModifiers = parameters.Select(p => p.GetOptionalCustomModifiers()).ToArray();
 
                 var ctor = builder.DefineConstructor(MethodAttributes.Public, constructor.CallingConvention, parameterTypes, requiredCustomModifiers, optionalCustomModifiers);
-                for (var i = 0; i < parameters.Length; ++i)
+                int iSequence = 1;
+                foreach (var parameter in parameters)
                 {
-                    var parameter = parameters[i];
-                    var parameterBuilder = ctor.DefineParameter(i + 1, parameter.Attributes, parameter.Name);
+                    var parameterBuilder = ctor.DefineParameter(iSequence++, parameter.Attributes, parameter.Name);
                     if (parameter.Attributes.HasFlag(ParameterAttributes.HasDefault))
                     {
                         parameterBuilder.SetConstant(parameter.RawDefaultValue);
@@ -50,6 +50,29 @@ namespace WcfRestClient.Core.Helpers
 
                 ctor.GetILGenerator().EmitCallWithParams(constructor, parameters.Length);
             }
+        }
+
+        public static PropertyInfo EmitAutoProperty(this TypeBuilder tb, string propertyName, Type propertyType)
+        {
+            var backingField = tb.DefineField($"<{propertyName}>k__BackingField", propertyType, FieldAttributes.Private);
+            var propertyBuilder = tb.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
+
+            var getMethod = tb.DefineMethod("get_" + propertyName, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.SpecialName | MethodAttributes.HideBySig, propertyType, Type.EmptyTypes);
+            var getGenerator = getMethod.GetILGenerator();
+            getGenerator.Emit(OpCodes.Ldarg_0);
+            getGenerator.Emit(OpCodes.Ldfld, backingField);
+            getGenerator.Emit(OpCodes.Ret);
+            propertyBuilder.SetGetMethod(getMethod);
+
+            var setMethod = tb.DefineMethod("set_" + propertyName, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.SpecialName | MethodAttributes.HideBySig, null, new[] { propertyType });
+            var setGenerator = setMethod.GetILGenerator();
+            setGenerator.Emit(OpCodes.Ldarg_0);
+            setGenerator.Emit(OpCodes.Ldarg_1);
+            setGenerator.Emit(OpCodes.Stfld, backingField);
+            setGenerator.Emit(OpCodes.Ret);
+            propertyBuilder.SetSetMethod(setMethod);
+
+            return propertyBuilder;
         }
 
         public static void EmitCallWithParams(this ILGenerator generator, MethodInfo method, int paramsCount)

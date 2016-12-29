@@ -41,6 +41,9 @@
     <Reference Include="System.ServiceModel.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncProcessor\AsyncProcessorSample.cs" />
+    <Compile Include="AsyncProcessor\ISample.cs" />
+    <Compile Include="IAsyncRequestProcessorTest.cs" />
     <Compile Include="WCF\Constant.cs" />
     <Compile Include="WCF\ISampleService.cs" />
     <Compile Include="WcfClientTest.cs" />
@@ -56,6 +59,10 @@
     <ProjectReference Include="..\WcfRestClient.Client\WcfRestClient.Client.csproj">
       <Project>{8fb3a44a-04b5-495e-82bf-f16403f8d82c}</Project>
       <Name>WcfRestClient.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WcfRestClient.Core\WcfRestClient.Core.csproj">
+      <Project>{96254223-3E0A-49F7-9773-11F79C5D8961}</Project>
+      <Name>WcfRestClient.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\WcfRestClient.ServiceHoster\WcfRestClient.ServiceHoster.csproj">
       <Project>{90833BAB-7A97-4501-9521-B4FE17133A37}</Project>

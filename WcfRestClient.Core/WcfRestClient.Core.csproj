@@ -42,7 +42,7 @@
     <Compile Include="Helpers\ReflectionHelper.cs" />
     <Compile Include="Helpers\XLambdaExpression.cs" />
     <Compile Include="IAsyncRequestProcessor.cs" />
-    <Compile Include="IWcfOperationDescriptor.cs" />
+    <Compile Include="IWcfRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceClient.cs" />
     <Compile Include="WcfOperationDescriptor.cs" />

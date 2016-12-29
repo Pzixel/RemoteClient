@@ -7,7 +7,7 @@ namespace WcfRestClient.Utils
 {
     public static class WcfUri
     {
-        public static string GetStringFromTemplate(string template, Dictionary<string, object> dictionary)
+        public static string GetStringFromTemplate(string template, IReadOnlyDictionary<string, object> dictionary)
         {
             if (string.IsNullOrEmpty(template))
                 return null;
@@ -26,7 +26,7 @@ namespace WcfRestClient.Utils
             return sb.ToString();
         }
 
-        public static Uri GetUriFromTemlate(string template, Dictionary<string, object> dictionary)
+        public static Uri GetUriFromTemlate(string template, IReadOnlyDictionary<string, object> dictionary)
         {
             var uriString = GetStringFromTemplate(template, dictionary);
             if (uriString == null)

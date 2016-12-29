@@ -17,20 +17,20 @@ namespace WcfRestClient.Client
             _client = new RestClient(baseUri, timeout);
         }
 
-        public Task<T> GetResultAsync<T>(IWcfOperationDescriptor descriptor, Dictionary<string, object> uriParameters, Dictionary<string, object> bodyParameters)
+        public Task<T> GetResultAsync<T>(IWcfRequest request)
         {
-            if (bodyParameters.Count > 1)
+            if (request.BodyPrameters.Count > 1)
                 throw new Exception("WrappedRequests not supported");
-            var queryString = WcfUri.GetUriFromTemlate(descriptor.UriTemplate, uriParameters);
-            return _client.SendAsync<T>(new HttpMethod(descriptor.Method), queryString, bodyParameters.Values.FirstOrDefault());
+            var queryString = WcfUri.GetUriFromTemlate(request.Descriptor.UriTemplate, request.QueryStringParameters);
+            return _client.SendAsync<T>(new HttpMethod(request.Descriptor.Method), queryString, request.BodyPrameters.Values.FirstOrDefault());
         }
 
-        public Task ExecuteAsync(IWcfOperationDescriptor descriptor, Dictionary<string, object> uriParameters, Dictionary<string, object> bodyParameters)
+        public Task ExecuteAsync(IWcfRequest request)
         {
-            if (bodyParameters.Count > 1)
+            if (request.BodyPrameters.Count > 1)
                 throw new Exception("WrappedRequests not supported");
-            var queryString = WcfUri.GetUriFromTemlate(descriptor.UriTemplate, uriParameters);
-            return _client.SendAsync(new HttpMethod(descriptor.Method), queryString, bodyParameters.Values.FirstOrDefault());
+            var queryString = WcfUri.GetUriFromTemlate(request.Descriptor.UriTemplate, request.QueryStringParameters);
+            return _client.SendAsync(new HttpMethod(request.Descriptor.Method), queryString, request.BodyPrameters.Values.FirstOrDefault());
         }
 
         public void Dispose()

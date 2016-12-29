@@ -29,8 +29,7 @@ namespace WcfRestClient.Core
             if (!typeof(T).IsInterface)
                 throw new Exception($"{typeName} is not an interface!");
 
-            string typename = typeName.TrimStart('I') + "Generated";
-            var tb = ReflectionHelper.Builder.DefineType(typename, TypeAttributes.Class | TypeAttributes.Sealed);
+            var tb = ReflectionHelper.Builder.DefineType($"<{typeName}>__Client", TypeAttributes.Class | TypeAttributes.Sealed);
             tb.SetParent(typeof(AsyncClientBase));
             tb.CreatePassThroughConstructors<AsyncClientBase>();
             tb.AddInterfaceImplementation(typeof(T));
@@ -68,7 +67,7 @@ namespace WcfRestClient.Core
             var newDict = Expression.New(typeof(Dictionary<string, object>));
             var uriDict = Expression.Variable(newDict.Type);
             var bodyDict = Expression.Variable(newDict.Type);
-            var descriptorVariable = Expression.Variable(typeof(IWcfOperationDescriptor));
+            var wcfRequest = Expression.Variable(typeof(IWcfRequest));
             var dictionaryAdd = newDict.Type.GetMethod("Add");
 
             var body = new List<Expression>(parameters.Length)
@@ -77,7 +76,6 @@ namespace WcfRestClient.Core
                 Expression.Assign(bodyDict, newDict)
             };
 
-
             for (int i = 1; i < parameters.Length; i++)
             {
                 var dictToAdd = wcfOperationDescriptor.UriTemplate.Contains("{" + parameters[i].Name + "}") ? uriDict : bodyDict;
@@ -85,14 +83,21 @@ namespace WcfRestClient.Core
                     Expression.Convert(parameters[i], typeof(object))));
             }
 
-            body.Add(Expression.Assign(descriptorVariable, Expression.Convert(GetCreateDesriptorExpression(wcfOperationDescriptor), descriptorVariable.Type)));
+            body.Add(Expression.Assign(wcfRequest, Expression.Convert(GetCreateDesriptorExpression(wcfOperationDescriptor), wcfRequest.Type)));
 
             var requestMethod = GetRequestMethod(interfaceMethod);
-            body.Add(Expression.Call(Expression.Field(parameters[0], "Processor"), requestMethod, descriptorVariable, uriDict, bodyDict));
+            body.Add(Expression.Call(Expression.Field(parameters[0], "Processor"), requestMethod, wcfRequest));
+
+            var wcfRequestType = ReflectionHelper.GetPropertyInterfaceImplementation<IWcfRequest>();
+            var wcfProps = wcfRequestType.GetProperties();
+            body.Add(Expression.MemberInit(Expression.New(wcfRequestType),
+                Expression.Bind(Array.Find(wcfProps, info => info.Name == "Descriptor"), GetCreateDesriptorExpression(wcfOperationDescriptor)),
+                Expression.Bind(Array.Find(wcfProps, info => info.Name == "QueryStringParameters"), Expression.Convert(uriDict, typeof(IReadOnlyDictionary<string, object>))),
+                Expression.Bind(Array.Find(wcfProps, info => info.Name == "BodyPrameters"), Expression.Convert(bodyDict, typeof(IReadOnlyDictionary<string, object>)))));
 
             var bodyExpression = Expression.Lambda
                 (
-                    Expression.Block(new[] { uriDict, bodyDict, descriptorVariable }, body.ToArray()),
+                    Expression.Block(new[] { uriDict, bodyDict, wcfRequest }, body.ToArray()),
                     parameters
                 );
 
