@@ -6,14 +6,14 @@ namespace WcfRestClient.Test.AsyncProcessor
 {
     public class AsyncProcessorSample : IAsyncRequestProcessor
     {
-        public Task<T> GetResultAsync<T>(IWcfRequest descriptor)
+        public Task<T> GetResultAsync<T>(IWcfRequest request)
         {
             if (typeof(T) == typeof(IWcfRequest))
-                return Task.FromResult((T) descriptor);
+                return Task.FromResult((T) request);
             throw new NotImplementedException();
         }
 
-        public Task ExecuteAsync(IWcfRequest descriptor)
+        public Task ExecuteAsync(IWcfRequest request)
         {
             throw new NotImplementedException();
         }
