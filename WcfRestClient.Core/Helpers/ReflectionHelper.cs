@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.ServiceModel.Web;
 
 namespace WcfRestClient.Core.Helpers
 {
@@ -16,21 +15,29 @@ namespace WcfRestClient.Core.Helpers
         public static ModuleBuilder Builder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("ServiceClientFactoryAssembly"), AssemblyBuilderAccess.Run)
                                                              .DefineDynamicModule("MainModule");
 
+        private static readonly Guid WebGetAttributeGuid = new Guid("6fa53946-3c59-309a-b1b0-417bd6c516ca");
+        private static readonly Guid WebInvokeAttributeGuid = new Guid("ce9aff8e-9446-3e1b-98d1-f7553fd7852e");
+
         public static WcfOperationDescriptor GetUriTemplate(MethodInfo methodInfo)
         {
-            var webGet = methodInfo.GetCustomAttributes(typeof (WebGetAttribute), true);
-            if (webGet.Length > 0)
+            var uriAttribute = methodInfo.GetCustomAttributes().FirstOrDefault(x =>
             {
-                var getAttribute = (WebGetAttribute) webGet[0];
-                return new WcfOperationDescriptor(getAttribute.UriTemplate, "GET", getAttribute.BodyStyle, getAttribute.RequestFormat, getAttribute.ResponseFormat);
-            }
-            var webInvoke = methodInfo.GetCustomAttributes(typeof (WebInvokeAttribute), true);
-            if (webInvoke.Length > 0)
+                var attributeGuid = x.GetType().GUID;
+                return attributeGuid == WebGetAttributeGuid || attributeGuid == WebInvokeAttributeGuid;
+            });
+
+            if (uriAttribute == null)
             {
-                var invokeAttribute = (WebInvokeAttribute) webInvoke[0];
-                return new WcfOperationDescriptor(invokeAttribute.UriTemplate, invokeAttribute.Method, invokeAttribute.BodyStyle, invokeAttribute.RequestFormat, invokeAttribute.ResponseFormat);
+                throw new ArgumentException("Method doesn't have WebGet or WebInvoke attribute");
             }
-            throw new ArgumentException("Method doesn't have WebGet or WebInvoke attribute");
+
+            var attributeType = uriAttribute.GetType();
+            string method = attributeType.GUID == WebGetAttributeGuid ? "GET" : (string) attributeType.GetProperty("Method").GetValue(uriAttribute);
+            string uriTemplate = (string) attributeType.GetProperty("UriTemplate").GetValue(uriAttribute);
+            var requestFormat = (OperationWebMessageFormat) attributeType.GetProperty("RequestFormat").GetValue(uriAttribute);
+            var responseFormat = (OperationWebMessageFormat) attributeType.GetProperty("ResponseFormat").GetValue(uriAttribute);
+
+            return new WcfOperationDescriptor(uriTemplate, method, requestFormat, responseFormat);
         }
 
         public static IEnumerable<MethodInfo> GetAllMethods(this Type type)

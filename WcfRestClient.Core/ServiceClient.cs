@@ -129,7 +129,6 @@ namespace WcfRestClient.Core
             return Expression.New(typeof(WcfOperationDescriptor).GetConstructors()[0],
                 Expression.Constant(descriptor.UriTemplate),
                 Expression.Constant(descriptor.Method),
-                Expression.Constant(descriptor.BodyStyle),
                 Expression.Constant(descriptor.RequestFormat),
                 Expression.Constant(descriptor.ResponseFormat));
         }

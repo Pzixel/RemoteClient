@@ -32,8 +32,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceModel.Web" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncClientBase.cs" />
@@ -43,6 +41,7 @@
     <Compile Include="Helpers\XLambdaExpression.cs" />
     <Compile Include="IAsyncRequestProcessor.cs" />
     <Compile Include="IWcfRequest.cs" />
+    <Compile Include="OperationWebMessageFormat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceClient.cs" />
     <Compile Include="WcfOperationDescriptor.cs" />

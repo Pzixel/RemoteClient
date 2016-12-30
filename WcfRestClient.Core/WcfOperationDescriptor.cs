@@ -1,20 +1,16 @@
-﻿using System.ServiceModel.Web;
-
-namespace WcfRestClient.Core
+﻿namespace WcfRestClient.Core
 {
     public struct WcfOperationDescriptor
     {
         public string UriTemplate { get; }
         public string Method { get; }
-        public WebMessageBodyStyle BodyStyle { get; }
-        public WebMessageFormat RequestFormat { get; }
-        public WebMessageFormat ResponseFormat { get; }
+        public OperationWebMessageFormat RequestFormat { get; }
+        public OperationWebMessageFormat ResponseFormat { get; }
 
-        public WcfOperationDescriptor(string uriTemplate, string method, WebMessageBodyStyle bodyStyle, WebMessageFormat requestFormat, WebMessageFormat responseFormat)
+        public WcfOperationDescriptor(string uriTemplate, string method, OperationWebMessageFormat requestFormat, OperationWebMessageFormat responseFormat)
         {
             UriTemplate = uriTemplate;
             Method = method;
-            BodyStyle = bodyStyle;
             RequestFormat = requestFormat;
             ResponseFormat = responseFormat;
         }

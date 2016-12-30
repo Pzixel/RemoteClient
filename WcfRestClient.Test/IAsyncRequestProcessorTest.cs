@@ -24,9 +24,8 @@ namespace WcfRestClient.Test
 
                 Assert.AreEqual("HEAD", request.Descriptor.Method);
                 Assert.AreEqual("sample?foo={foo}&bar={bar}", request.Descriptor.UriTemplate);
-                Assert.AreEqual(WebMessageBodyStyle.WrappedRequest, request.Descriptor.BodyStyle);
-                Assert.AreEqual(WebMessageFormat.Json, request.Descriptor.RequestFormat);
-                Assert.AreEqual(WebMessageFormat.Json, request.Descriptor.ResponseFormat);
+                Assert.AreEqual(OperationWebMessageFormat.Json, request.Descriptor.RequestFormat);
+                Assert.AreEqual(OperationWebMessageFormat.Json, request.Descriptor.ResponseFormat);
 
                 Assert.IsTrue(request.QueryStringParameters.ContainsKey("foo"));
                 Assert.AreEqual(intSample, request.QueryStringParameters["foo"]);
