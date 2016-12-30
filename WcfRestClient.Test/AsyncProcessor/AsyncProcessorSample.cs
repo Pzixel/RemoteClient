@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using WcfRestClient.Core;
 
@@ -9,20 +8,14 @@ namespace WcfRestClient.Test.AsyncProcessor
     {
         public Task<T> GetResultAsync<T>(IWcfRequest descriptor)
         {
-            foreach (var frame in new StackTrace().GetFrames())
-            {
-                Console.WriteLine(frame.GetMethod().Name);
-            }
-            return Task.FromResult(default(T));
+            if (typeof(T) == typeof(IWcfRequest))
+                return Task.FromResult((T) descriptor);
+            throw new NotImplementedException();
         }
 
         public Task ExecuteAsync(IWcfRequest descriptor)
         {
-            foreach (var frame in new StackTrace().GetFrames())
-            {
-                Console.WriteLine(frame.GetMethod().Name);
-            }
-            return Task.CompletedTask;
+            throw new NotImplementedException();
         }
 
         public void Dispose()

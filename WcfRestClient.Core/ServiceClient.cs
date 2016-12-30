@@ -76,6 +76,7 @@ namespace WcfRestClient.Core
                 Expression.Assign(bodyDict, newDict)
             };
 
+
             for (int i = 1; i < parameters.Length; i++)
             {
                 var dictToAdd = wcfOperationDescriptor.UriTemplate.Contains("{" + parameters[i].Name + "}") ? uriDict : bodyDict;
@@ -83,17 +84,17 @@ namespace WcfRestClient.Core
                     Expression.Convert(parameters[i], typeof(object))));
             }
 
-            body.Add(Expression.Assign(wcfRequest, Expression.Convert(GetCreateDesriptorExpression(wcfOperationDescriptor), wcfRequest.Type)));
+            var wcfRequestType = ReflectionHelper.GetPropertyInterfaceImplementation<IWcfRequest>();
+            var wcfProps = wcfRequestType.GetProperties();
+            var memberInit = Expression.MemberInit(Expression.New(wcfRequestType), 
+                Expression.Bind(Array.Find(wcfProps, info => info.Name == "Descriptor"), GetCreateDesriptorExpression(wcfOperationDescriptor)),
+                Expression.Bind(Array.Find(wcfProps, info => info.Name == "QueryStringParameters"), Expression.Convert(uriDict, typeof(IReadOnlyDictionary<string, object>))),
+                Expression.Bind(Array.Find(wcfProps, info => info.Name == "BodyPrameters"), Expression.Convert(bodyDict, typeof(IReadOnlyDictionary<string, object>))));
+
+            body.Add(Expression.Assign(wcfRequest, Expression.Convert(memberInit, wcfRequest.Type)));
 
             var requestMethod = GetRequestMethod(interfaceMethod);
             body.Add(Expression.Call(Expression.Field(parameters[0], "Processor"), requestMethod, wcfRequest));
-
-            var wcfRequestType = ReflectionHelper.GetPropertyInterfaceImplementation<IWcfRequest>();
-            var wcfProps = wcfRequestType.GetProperties();
-            body.Add(Expression.MemberInit(Expression.New(wcfRequestType),
-                Expression.Bind(Array.Find(wcfProps, info => info.Name == "Descriptor"), GetCreateDesriptorExpression(wcfOperationDescriptor)),
-                Expression.Bind(Array.Find(wcfProps, info => info.Name == "QueryStringParameters"), Expression.Convert(uriDict, typeof(IReadOnlyDictionary<string, object>))),
-                Expression.Bind(Array.Find(wcfProps, info => info.Name == "BodyPrameters"), Expression.Convert(bodyDict, typeof(IReadOnlyDictionary<string, object>)))));
 
             var bodyExpression = Expression.Lambda
                 (
