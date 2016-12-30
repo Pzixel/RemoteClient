@@ -14,7 +14,7 @@ namespace WcfRestClient.Test.WCF
         Task<Tuple<string, List<Guid>>> GetMessage(string someString, List<Guid> listOfGuids);
 
         [OperationContract]
-        [WebInvoke(Method = "GET", UriTemplate = "/hello", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        [WebGet(UriTemplate = "/hello", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         Task<string> GetHello();
 
         [OperationContract]

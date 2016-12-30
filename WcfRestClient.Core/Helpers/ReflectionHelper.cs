@@ -15,15 +15,15 @@ namespace WcfRestClient.Core.Helpers
         public static ModuleBuilder Builder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("ServiceClientFactoryAssembly"), AssemblyBuilderAccess.Run)
                                                              .DefineDynamicModule("MainModule");
 
-        private static readonly Guid WebGetAttributeGuid = new Guid("6fa53946-3c59-309a-b1b0-417bd6c516ca");
-        private static readonly Guid WebInvokeAttributeGuid = new Guid("ce9aff8e-9446-3e1b-98d1-f7553fd7852e");
+        private const string WebGetFullName = "System.ServiceModel.Web.WebGetAttribute";
+        private const string WebInvokeFullName = "System.ServiceModel.Web.WebInvokeAttribute";
 
         public static WcfOperationDescriptor GetUriTemplate(MethodInfo methodInfo)
         {
             var uriAttribute = methodInfo.GetCustomAttributes().FirstOrDefault(x =>
             {
-                var attributeGuid = x.GetType().GUID;
-                return attributeGuid == WebGetAttributeGuid || attributeGuid == WebInvokeAttributeGuid;
+                var attributeGuid = x.GetType().FullName;
+                return attributeGuid == WebGetFullName || attributeGuid == WebInvokeFullName;
             });
 
             if (uriAttribute == null)
@@ -32,7 +32,7 @@ namespace WcfRestClient.Core.Helpers
             }
 
             var attributeType = uriAttribute.GetType();
-            string method = attributeType.GUID == WebGetAttributeGuid ? "GET" : (string) attributeType.GetProperty("Method").GetValue(uriAttribute);
+            string method = attributeType.FullName == WebGetFullName ? "GET" : (string) attributeType.GetProperty("Method").GetValue(uriAttribute);
             string uriTemplate = (string) attributeType.GetProperty("UriTemplate").GetValue(uriAttribute);
             var requestFormat = (OperationWebMessageFormat) attributeType.GetProperty("RequestFormat").GetValue(uriAttribute);
             var responseFormat = (OperationWebMessageFormat) attributeType.GetProperty("ResponseFormat").GetValue(uriAttribute);
