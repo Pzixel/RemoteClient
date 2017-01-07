@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -36,13 +38,13 @@ namespace WcfRestClient.Core.Helpers
                         parameterBuilder.SetConstant(parameter.RawDefaultValue);
                     }
 
-                    foreach (var attribute in BuildCustomAttributes(parameter.GetCustomAttributesData()))
+                    foreach (var attribute in BuildCustomAttributes(parameter.CustomAttributes))
                     {
                         parameterBuilder.SetCustomAttribute(attribute);
                     }
                 }
 
-                foreach (var attribute in BuildCustomAttributes(constructor.GetCustomAttributesData()))
+                foreach (var attribute in BuildCustomAttributes(constructor.CustomAttributes))
                 {
                     ctor.SetCustomAttribute(attribute);
                 }
@@ -117,16 +119,71 @@ namespace WcfRestClient.Core.Helpers
 
         private static IEnumerable<CustomAttributeBuilder> BuildCustomAttributes(IEnumerable<CustomAttributeData> customAttributes)
         {
-            return customAttributes.Select(attribute => {
-                var attributeArgs = attribute.ConstructorArguments.Select(a => a.Value).ToArray();
+            return customAttributes.Select(attribute =>
+            {
+                var attributeArgs = attribute.ConstructorArguments.Select(a => a.Value.ResolveValue()).ToArray();
+
                 if (attribute.NamedArguments == null)
                     throw new ArgumentNullException(nameof(attribute), "attribute.NamedArguments is null!");
-                var namedPropertyInfos = attribute.NamedArguments.Select(a => a.MemberInfo).OfType<PropertyInfo>().ToArray();
-                var namedPropertyValues = attribute.NamedArguments.Where(a => a.MemberInfo is PropertyInfo).Select(a => a.TypedValue.Value).ToArray();
-                var namedFieldInfos = attribute.NamedArguments.Select(a => a.MemberInfo).OfType<FieldInfo>().ToArray();
-                var namedFieldValues = attribute.NamedArguments.Where(a => a.MemberInfo is FieldInfo).Select(a => a.TypedValue.Value).ToArray();
-                return new CustomAttributeBuilder(attribute.Constructor, attributeArgs, namedPropertyInfos, namedPropertyValues, namedFieldInfos, namedFieldValues);
+                var fields = new List<FieldInfo>();
+                var fieldValues = new List<object>();
+                var properties = new List<PropertyInfo>();
+                var propertyValues = new List<object>();
+
+                var allFields = attribute.AttributeType.GetRuntimeFields().ToDictionary(x => x.Name);
+                var allProperties = attribute.AttributeType.GetRuntimeProperties().ToDictionary(x => x.Name);
+
+                foreach (var customAttributeNamedArgument in attribute.NamedArguments)
+                {
+                    if (customAttributeNamedArgument.IsField)
+                    {
+                        var field = allFields[customAttributeNamedArgument.MemberName];
+                        fields.Add(field);
+                        fieldValues.Add(customAttributeNamedArgument.TypedValue.Value.ResolveValue());
+                    }
+                    else
+                    {
+                        var prop = allProperties[customAttributeNamedArgument.MemberName];
+                        properties.Add(prop);
+                        propertyValues.Add(customAttributeNamedArgument.TypedValue.Value.ResolveValue());
+                    }
+                }
+
+                return new CustomAttributeBuilder(attribute.Constructor, attributeArgs, properties.ToArray(), propertyValues.ToArray(), fields.ToArray(), fieldValues.ToArray());
             });
+        }
+
+        internal static object ResolveValue(this object value)
+        {
+            // We are only hunting for the case of the ReadOnlyCollection<T> here.
+            var sourceArray = value as ReadOnlyCollection<CustomAttributeTypedArgument>;
+
+            if (sourceArray == null)
+            {
+                return value;
+            }
+
+            if (sourceArray.Count == 0)
+            {
+                return Array.Empty<object>();
+            }
+
+            var underlyingType = sourceArray[0].ArgumentType; // type to be used for arguments
+            var listType = typeof(List<>).MakeGenericType(underlyingType);
+            var argList = (IList) Activator.CreateInstance(listType);
+
+            foreach (CustomAttributeTypedArgument typedArgument in sourceArray)
+            {
+                if (underlyingType != typedArgument.ArgumentType)
+                {
+                    throw new InvalidOperationException("Types for the same named parameter of array type are expected to be same");
+                }
+
+                argList.Add(typedArgument.Value);
+
+            }
+            var toArrayMethod = listType.GetTypeInfo().GetMethod("ToArray");
+            return toArrayMethod.Invoke(argList, Array.Empty<object>());
         }
     }
 }

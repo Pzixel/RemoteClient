@@ -14,10 +14,9 @@ namespace WcfRestClient.Core.Helpers
             var proxyParamTypes = new Type[paramTypes.Length - 1];
             Array.Copy(paramTypes, 1, proxyParamTypes, 0, proxyParamTypes.Length);
             var proxy = tb.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual, expression.ReturnType, proxyParamTypes);
-            var method = tb.DefineMethod($"<{proxy.Name}>__StaticProxy", MethodAttributes.Private | MethodAttributes.Static, proxy.ReturnType, paramTypes);
-            expression.CompileToMethod(method);
+            var @delegate = expression.Compile();
 
-            proxy.GetILGenerator().EmitCallWithParams(method, paramTypes.Length);
+            proxy.GetILGenerator().EmitCallWithParams(@delegate.GetMethodInfo(), paramTypes.Length);
             return proxy;
         }
     }
