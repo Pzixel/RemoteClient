@@ -59,12 +59,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\WcfRestClient.Utils\WcfRestClient.Utils.csproj">
-      <Project>{09737A6C-B407-471C-B81B-27621468C969}</Project>
-      <Name>WcfRestClient.Utils</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

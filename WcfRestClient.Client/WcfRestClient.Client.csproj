@@ -39,16 +39,6 @@
     <Compile Include="BaseUriProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\WcfRestClient.Core\WcfRestClient.Core.csproj">
-      <Project>{96254223-3E0A-49F7-9773-11F79C5D8961}</Project>
-      <Name>WcfRestClient.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WcfRestClient.Utils\WcfRestClient.Utils.csproj">
-      <Project>{09737A6C-B407-471C-B81B-27621468C969}</Project>
-      <Name>WcfRestClient.Utils</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
