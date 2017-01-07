@@ -40,11 +40,9 @@ namespace WcfRestClient.Core.Helpers
             return new WcfOperationDescriptor(uriTemplate, method, requestFormat, responseFormat);
         }
 
-        public static IEnumerable<MethodInfo> GetAllMethods(this Type type)
+        public static IEnumerable<MethodInfo> GetAllMethods(this TypeInfo typeInfo)
         {
-            return type.GetMethods()
-                .Concat(type.BaseType?.GetMethods() ?? new MethodInfo[0])
-                .Concat(type.GetInterfaces().SelectMany(x => x.GetMethods()));
+            return typeInfo.GetMethods().Concat(typeInfo.GetInterfaces().SelectMany(x => x.GetTypeInfo().GetAllMethods()));
         }
 
         private static class InterfaceImplementator<T> where T: class 

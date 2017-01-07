@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -26,20 +27,24 @@ namespace WcfRestClient.Core
         private static Type CreateType()
         {
             var typeName = typeof(T).Name;
-            if (!typeof(T).IsInterface)
+            var typeInfo = typeof(T).GetTypeInfo();
+            if (!typeInfo.IsInterface)
                 throw new Exception($"{typeName} is not an interface!");
 
             var tb = ReflectionHelper.Builder.DefineType($"<{typeName}>__Client", TypeAttributes.Class | TypeAttributes.Sealed);
             tb.SetParent(typeof(AsyncClientBase));
             tb.CreatePassThroughConstructors<AsyncClientBase>();
             tb.AddInterfaceImplementation(typeof(T));
-            foreach (var interfaceMethod in typeof(T).GetAllMethods())
+
+            
+                var taskTypeInfo = typeof(Task).GetTypeInfo();
+            foreach (var interfaceMethod in typeInfo.GetAllMethods())
             {
-                if (typeof(Task).IsAssignableFrom(interfaceMethod.ReturnType))
+                if (taskTypeInfo.IsAssignableFrom(interfaceMethod.ReturnType))
                 {
                     ImplementMethod(tb, interfaceMethod);
                 }
-                else if (interfaceMethod == ReflectionHelper.DisposeMethod)
+                else if (ReferenceEquals(interfaceMethod, ReflectionHelper.DisposeMethod))
                 {
                     ImplementProcessorProxyMethodCall(tb, interfaceMethod);
                 }
@@ -49,7 +54,7 @@ namespace WcfRestClient.Core
                 }
             }
 
-            return tb.CreateType();
+            return tb.CreateTypeInfo().AsType();
         }
 
         private static void ImplementProcessorProxyMethodCall(TypeBuilder tb, MethodInfo interfaceMethod)
@@ -68,7 +73,7 @@ namespace WcfRestClient.Core
             var uriDict = Expression.Variable(newDict.Type);
             var bodyDict = Expression.Variable(newDict.Type);
             var wcfRequest = Expression.Variable(typeof(IWcfRequest));
-            var dictionaryAdd = newDict.Type.GetMethod("Add");
+            var dictionaryAdd = newDict.Type.GetTypeInfo().GetMethod("Add");
 
             var body = new List<Expression>(parameters.Length)
             {
@@ -86,7 +91,7 @@ namespace WcfRestClient.Core
 
             var wcfRequestType = ReflectionHelper.GetPropertyInterfaceImplementation<IWcfRequest>();
             var wcfProps = wcfRequestType.GetProperties();
-            var memberInit = Expression.MemberInit(Expression.New(wcfRequestType), 
+            var memberInit = Expression.MemberInit(Expression.New(wcfRequestType.AsType()), 
                 Expression.Bind(Array.Find(wcfProps, info => info.Name == "Descriptor"), GetCreateDesriptorExpression(wcfOperationDescriptor)),
                 Expression.Bind(Array.Find(wcfProps, info => info.Name == "QueryStringParameters"), Expression.Convert(uriDict, typeof(IReadOnlyDictionary<string, object>))),
                 Expression.Bind(Array.Find(wcfProps, info => info.Name == "BodyPrameters"), Expression.Convert(bodyDict, typeof(IReadOnlyDictionary<string, object>))));
@@ -108,7 +113,7 @@ namespace WcfRestClient.Core
 
         private static MethodInfo GetRequestMethod(MethodInfo interfaceMethod)
         {
-            var type = typeof (IAsyncRequestProcessor);
+            var type = typeof (IAsyncRequestProcessor).GetTypeInfo();
             return interfaceMethod.ReturnType.GenericTypeArguments.Length == 0 ? type.GetMethod("ExecuteAsync") : type.GetMethod("GetResultAsync").MakeGenericMethod(interfaceMethod.ReturnType.GenericTypeArguments);
         }
 
@@ -126,7 +131,7 @@ namespace WcfRestClient.Core
 
         private static Expression GetCreateDesriptorExpression(WcfOperationDescriptor descriptor)
         {
-            return Expression.New(typeof(WcfOperationDescriptor).GetConstructors()[0],
+            return Expression.New(typeof(WcfOperationDescriptor).GetTypeInfo().DeclaredConstructors.First(),
                 Expression.Constant(descriptor.UriTemplate),
                 Expression.Constant(descriptor.Method),
                 Expression.Constant(descriptor.RequestFormat),
