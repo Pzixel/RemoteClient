@@ -13,7 +13,7 @@ namespace WcfRestClient.Core.Helpers
             var paramTypes = expression.Parameters.Select(x => x.Type).ToArray();
             var proxyParamTypes = new Type[paramTypes.Length - 1];
             Array.Copy(paramTypes, 1, proxyParamTypes, 0, proxyParamTypes.Length);
-            var proxy = tb.DefineMethod(methodName, MethodAttributes.Public | MethodAttributes.Virtual, expression.ReturnType, proxyParamTypes);
+            var proxy = tb.DefineMethod(methodName, attributes, expression.ReturnType, proxyParamTypes);
             var method = tb.DefineMethod($"<{proxy.Name}>__StaticProxy", MethodAttributes.Private | MethodAttributes.Static, proxy.ReturnType, paramTypes);
             expression.CompileToMethod(method);
 
