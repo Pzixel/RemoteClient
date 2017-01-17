@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace WcfRestClient.Core
+namespace RemoteClient.Core
 {
     public interface IAsyncRequestProcessor : IDisposable
     {
-        Task<T> GetResultAsync<T>(IWcfRequest request);
-        Task ExecuteAsync(IWcfRequest request);
+        Task<T> GetResultAsync<T>(IRemoteRequest request);
+        Task ExecuteAsync(IRemoteRequest request);
     }
 }

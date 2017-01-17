@@ -6,9 +6,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
-using WcfRestClient.Core.Helpers;
+using RemoteClient.Core.Helpers;
 
-namespace WcfRestClient.Core
+namespace RemoteClient.Core
 {
     /// <summary>
     /// Generate REST client for specified WCF service contract
@@ -61,53 +61,54 @@ namespace WcfRestClient.Core
         {
             var parameters = GetLamdaParameters(interfaceMethod);
             var expr = Expression.Lambda(Expression.Call(Expression.Field(parameters[0], "Processor"), interfaceMethod), parameters);
-            var implementation = expr.CompileToInstanceMethod(tb, interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual);
+            var implementation = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual);
+            implementation.GetILGenerator().Emit(OpCodes.Ret);
             tb.DefineMethodOverride(implementation, interfaceMethod);
         }
 
         private static void ImplementMethod(TypeBuilder tb, MethodInfo interfaceMethod)
         {
             var wcfOperationDescriptor = ReflectionHelper.GetUriTemplate(interfaceMethod);
-            var parameters = GetLamdaParameters(interfaceMethod);
-            var newDict = Expression.New(typeof(Dictionary<string, object>));
-            var uriDict = Expression.Variable(newDict.Type);
-            var bodyDict = Expression.Variable(newDict.Type);
-            var wcfRequest = Expression.Variable(typeof(IWcfRequest));
-            var dictionaryAdd = newDict.Type.GetTypeInfo().GetMethod("Add");
-
-            var body = new List<Expression>(parameters.Length)
+            var implementation = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual, interfaceMethod.CallingConvention,
+                                                 interfaceMethod.ReturnType, interfaceMethod.GetParameters().Select(x => x.ParameterType).ToArray());
+            var il = implementation.GetILGenerator();
+            var uriDict = il.DeclareLocal(typeof(Dictionary<string, object>));
+            var bodyDict = il.DeclareLocal(typeof(Dictionary<string, object>));
+            var dictionaryAdd = typeof(Dictionary<string, object>).GetTypeInfo().GetMethod("Add");
+            var request = il.DeclareLocal(ReflectionHelper.GetPropertyInterfaceImplementation<IRemoteRequest>().AsType());
+            var reqMethod = GetRequestMethod(interfaceMethod);
+            il.Emit(OpCodes.Newobj, uriDict.LocalType.GetTypeInfo().GetConstructor(Type.EmptyTypes));
+            il.Emit(OpCodes.Stloc_0);
+            il.Emit(OpCodes.Newobj, bodyDict.LocalType.GetTypeInfo().GetConstructor(Type.EmptyTypes));
+            il.Emit(OpCodes.Stloc_1);
+            il.Emit(OpCodes.Ldloc_0);
+            var parameters = interfaceMethod.GetParameters();
+            foreach (var parameter in parameters)
             {
-                Expression.Assign(uriDict, newDict),
-                Expression.Assign(bodyDict, newDict)
-            };
-
-
-            for (int i = 1; i < parameters.Length; i++)
-            {
-                var dictToAdd = wcfOperationDescriptor.UriTemplate.Contains("{" + parameters[i].Name + "}") ? uriDict : bodyDict;
-                body.Add(Expression.Call(dictToAdd, dictionaryAdd, Expression.Constant(parameters[i].Name, typeof(string)),
-                    Expression.Convert(parameters[i], typeof(object))));
+                var dictToAdd = wcfOperationDescriptor.UriTemplate.Contains("{" + parameter.Name + "}") ? uriDict : bodyDict;
+                il.EmitLdloc(dictToAdd.LocalIndex);
+                il.Emit(OpCodes.Ldstr, parameter.Name);
+                il.EmitLdarg(parameter.Position + 1);
+                if (parameter.ParameterType.GetTypeInfo().IsValueType)
+                {
+                    il.Emit(OpCodes.Box);
+                }
+                il.Emit(OpCodes.Callvirt, dictionaryAdd);
             }
-
-            var wcfRequestType = ReflectionHelper.GetPropertyInterfaceImplementation<IWcfRequest>();
-            var wcfProps = wcfRequestType.GetProperties();
-            var memberInit = Expression.MemberInit(Expression.New(wcfRequestType.AsType()), 
-                Expression.Bind(Array.Find(wcfProps, info => info.Name == "Descriptor"), GetCreateDesriptorExpression(wcfOperationDescriptor)),
-                Expression.Bind(Array.Find(wcfProps, info => info.Name == "QueryStringParameters"), Expression.Convert(uriDict, typeof(IReadOnlyDictionary<string, object>))),
-                Expression.Bind(Array.Find(wcfProps, info => info.Name == "BodyPrameters"), Expression.Convert(bodyDict, typeof(IReadOnlyDictionary<string, object>))));
-
-            body.Add(Expression.Assign(wcfRequest, Expression.Convert(memberInit, wcfRequest.Type)));
-
-            var requestMethod = GetRequestMethod(interfaceMethod);
-            body.Add(Expression.Call(Expression.Field(parameters[0], "Processor"), requestMethod, wcfRequest));
-
-            var bodyExpression = Expression.Lambda
-                (
-                    Expression.Block(new[] { uriDict, bodyDict, wcfRequest }, body.ToArray()),
-                    parameters
-                );
-
-            var implementation = bodyExpression.CompileToInstanceMethod(tb, interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual);
+            il.Emit(OpCodes.Ldstr, wcfOperationDescriptor.UriTemplate);
+            il.Emit(OpCodes.Ldstr, wcfOperationDescriptor.Method);
+            il.Emit(wcfOperationDescriptor.RequestFormat == 0 ? OpCodes.Ldc_I4_0 : OpCodes.Ldc_I4_1);
+            il.Emit(wcfOperationDescriptor.ResponseFormat == 0 ? OpCodes.Ldc_I4_0 : OpCodes.Ldc_I4_1);
+            il.Emit(OpCodes.Newobj, typeof(WcfOperationDescriptor).GetTypeInfo().DeclaredConstructors.Single());
+            il.Emit(OpCodes.Ldloc_0);
+            il.Emit(OpCodes.Ldloc_1);
+            il.Emit(OpCodes.Newobj, request.LocalType.GetTypeInfo().DeclaredConstructors.Single(x => x.GetParameters().Length > 0));
+            il.Emit(OpCodes.Stloc_2);
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, typeof(AsyncClientBase).GetTypeInfo().DeclaredFields.Single());
+            il.Emit(OpCodes.Ldloc_2);
+            il.Emit(OpCodes.Callvirt, reqMethod);
+            il.Emit(OpCodes.Ret);
             tb.DefineMethodOverride(implementation, interfaceMethod);
         }
 

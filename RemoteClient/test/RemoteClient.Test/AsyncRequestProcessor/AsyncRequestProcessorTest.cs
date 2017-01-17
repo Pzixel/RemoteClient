@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WcfRestClient.Core;
+using RemoteClient.Core;
 using Xunit;
 
 namespace RemoteClient.Test.AsyncRequestProcessor

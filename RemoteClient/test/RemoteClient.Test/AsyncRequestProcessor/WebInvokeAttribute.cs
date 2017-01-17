@@ -1,4 +1,4 @@
-﻿using WcfRestClient.Core;
+﻿using RemoteClient.Core;
 
 // ReSharper disable once CheckNamespace
 namespace System.ServiceModel.Web

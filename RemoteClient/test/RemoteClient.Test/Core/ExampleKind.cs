@@ -1,4 +1,4 @@
-﻿namespace RemoteClient.Test.TestClasses
+﻿namespace RemoteClient.Test.Core
 {
     public enum ExampleKind
     {

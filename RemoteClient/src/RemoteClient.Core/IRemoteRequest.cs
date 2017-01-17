@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
-namespace WcfRestClient.Core
+namespace RemoteClient.Core
 {
-    public interface IWcfRequest
+    public interface IRemoteRequest
     {
         WcfOperationDescriptor Descriptor { get; }
         IReadOnlyDictionary<string, object> QueryStringParameters { get; }

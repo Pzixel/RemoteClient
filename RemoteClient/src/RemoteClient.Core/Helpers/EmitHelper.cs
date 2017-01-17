@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace WcfRestClient.Core.Helpers
+namespace RemoteClient.Core.Helpers
 {
     internal static class EmitHelper
     {
@@ -53,7 +53,7 @@ namespace WcfRestClient.Core.Helpers
             }
         }
 
-        public static PropertyInfo EmitAutoProperty(this TypeBuilder tb, string propertyName, Type propertyType)
+        public static AutoPropertyInfo EmitAutoProperty(this TypeBuilder tb, string propertyName, Type propertyType)
         {
             var backingField = tb.DefineField($"<{propertyName}>k__BackingField", propertyType, FieldAttributes.Private);
             var propertyBuilder = tb.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
@@ -73,7 +73,7 @@ namespace WcfRestClient.Core.Helpers
             setGenerator.Emit(OpCodes.Ret);
             propertyBuilder.SetSetMethod(setMethod);
 
-            return propertyBuilder;
+            return new AutoPropertyInfo(propertyBuilder, backingField);
         }
 
         public static void EmitCallWithParams(this ILGenerator generator, MethodInfo method, int paramsCount)
@@ -94,27 +94,54 @@ namespace WcfRestClient.Core.Helpers
             }
             for (int i = 0; i < paramsCount; i++)
             {
-                switch (i)
-                {
-                    case 0:
-                        generator.Emit(OpCodes.Ldarg_0);
-                        break;
-                    case 1:
-                        generator.Emit(OpCodes.Ldarg_1);
-                        break;
-                    case 2:
-                        generator.Emit(OpCodes.Ldarg_2);
-                        break;
-                    case 3:
-                        generator.Emit(OpCodes.Ldarg_3);
-                        break;
-                    default:
-                        generator.Emit(OpCodes.Ldarg_S, (byte) i);
-                        break;
-                }
+                generator.EmitLdarg(i);
             }
             emitCallAction(generator);
             generator.Emit(OpCodes.Ret);
+        }
+
+        public static void EmitLdarg(this ILGenerator generator, int i)
+        {
+            switch (i)
+            {
+                case 0:
+                    generator.Emit(OpCodes.Ldarg_0);
+                    break;
+                case 1:
+                    generator.Emit(OpCodes.Ldarg_1);
+                    break;
+                case 2:
+                    generator.Emit(OpCodes.Ldarg_2);
+                    break;
+                case 3:
+                    generator.Emit(OpCodes.Ldarg_3);
+                    break;
+                default:
+                    generator.Emit(OpCodes.Ldarg_S, (byte) i);
+                    break;
+            }
+        }
+
+        public static void EmitLdloc(this ILGenerator generator, int i)
+        {
+            switch (i)
+            {
+                case 0:
+                    generator.Emit(OpCodes.Ldloc_0);
+                    break;
+                case 1:
+                    generator.Emit(OpCodes.Ldloc_1);
+                    break;
+                case 2:
+                    generator.Emit(OpCodes.Ldloc_2);
+                    break;
+                case 3:
+                    generator.Emit(OpCodes.Ldloc_3);
+                    break;
+                default:
+                    generator.Emit(OpCodes.Ldloc_S, (byte) i);
+                    break;
+            }
         }
 
         private static IEnumerable<CustomAttributeBuilder> BuildCustomAttributes(IEnumerable<CustomAttributeData> customAttributes)

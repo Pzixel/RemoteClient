@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace WcfRestClient.Core.Helpers
+namespace RemoteClient.Core.Helpers
 {
     internal static class ReflectionHelper
     {
@@ -63,19 +63,29 @@ namespace WcfRestClient.Core.Helpers
                     throw new ArgumentException($"{typeInfo.FullName} must have properties only!");
                 }
                 var tb = Builder.DefineType($"<{typeInfo.Name}>__Implementation", TypeAttributes.Class | TypeAttributes.Sealed);
+                tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
+                var ctor = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
+                                                CallingConventions.Standard,
+                                                interfaceProps.Select(x => x.PropertyType).ToArray()).GetILGenerator();
+                int i = 1;
                 foreach (var interfaceProp in interfaceProps)
                 {
                     var prop = tb.EmitAutoProperty(interfaceProp.Name, interfaceProp.PropertyType);
                     if (interfaceProp.CanRead)
                     {
-                        tb.DefineMethodOverride(prop.GetMethod, interfaceProp.GetMethod);
+                        tb.DefineMethodOverride(prop.PropertyInfo.GetMethod, interfaceProp.GetMethod);
                     }
                     if (interfaceProp.CanWrite)
                     {
-                        tb.DefineMethodOverride(prop.SetMethod, interfaceProp.SetMethod);
+                        tb.DefineMethodOverride(prop.PropertyInfo.SetMethod, interfaceProp.SetMethod);
                     }
+                    ctor.EmitLdarg(0);
+                    ctor.EmitLdarg(i++);
+                    ctor.Emit(OpCodes.Stfld, prop.FieldInfo);
                 }
+                ctor.Emit(OpCodes.Ret);
                 tb.AddInterfaceImplementation(interfaceType);
+                
                 Value = tb.CreateTypeInfo();
             }
         }

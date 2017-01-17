@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WcfRestClient.Core
+namespace RemoteClient.Core
 {
     public class ClientGenerationException : Exception
     {

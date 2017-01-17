@@ -1,4 +1,4 @@
-﻿namespace WcfRestClient.Core
+﻿namespace RemoteClient.Core
 {
     public abstract class AsyncClientBase
     {

@@ -1,11 +1,11 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using RemoteClient.Test.TestClasses;
-using WcfRestClient.Core.Helpers;
+using RemoteClient.Core.Helpers;
 using Xunit;
 
-namespace RemoteClient.Test
+namespace RemoteClient.Test.Core
 {
     public class CoreTest
     {
@@ -35,6 +35,22 @@ namespace RemoteClient.Test
                     Assert.Equal(data.NamedArguments[1].TypedValue.Value.ResolveValue(), clone.NamedArguments[1].TypedValue.Value.ResolveValue());
                 }
             });
+        }
+
+
+        [Fact]
+        public void ImplementatorTest()
+        {
+            var impl = ReflectionHelper.GetPropertyInterfaceImplementation<IPoint>();
+            var implType = impl.AsType();
+
+            var instance = (IPoint) Activator.CreateInstance(implType, 10, 20);
+            var defaultInstance = (IPoint)Activator.CreateInstance(implType);
+
+            Assert.Equal(defaultInstance.X, 0);
+            Assert.Equal(defaultInstance.Y, 0);
+            Assert.Equal(instance.X, 10);
+            Assert.Equal(instance.Y, 20);
         }
     }
 }

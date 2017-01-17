@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RemoteClient.Test.TestClasses
+namespace RemoteClient.Test.Core
 {
     [AttributeUsage(AttributeTargets.All)]
     public class ExampleAttribute : Attribute
