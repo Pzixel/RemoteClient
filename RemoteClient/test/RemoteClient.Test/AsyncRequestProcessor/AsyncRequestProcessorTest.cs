@@ -12,7 +12,8 @@ namespace RemoteClient.Test.AsyncRequestProcessor
         [Fact]
         public async Task Sample()
         {
-            using (var task = ServiceClient<ISample>.New(new AsyncProcessorSample()))
+            var asyncRequestProcessor = new AsyncProcessorSample();
+            using (var task = ServiceClient<ISample>.New(asyncRequestProcessor))
             {
                 const int intSample = 10;
                 var guidSample = Guid.Empty;
@@ -34,6 +35,7 @@ namespace RemoteClient.Test.AsyncRequestProcessor
                 Assert.NotNull(dict);
                 Assert.True(dict.SequenceEqual(dictSample));
             }
+            Assert.True(asyncRequestProcessor.IsDisposed);
         }
     }
 }

@@ -20,7 +20,9 @@ namespace RemoteClient.Test.AsyncRequestProcessor
 
         public void Dispose()
         {
-
+            IsDisposed = true;
         }
+
+        public bool IsDisposed { get; set; }
     }
 }

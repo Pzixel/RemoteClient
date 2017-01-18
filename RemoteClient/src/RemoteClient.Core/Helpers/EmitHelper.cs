@@ -78,7 +78,7 @@ namespace RemoteClient.Core.Helpers
 
         public static void EmitCallWithParams(this ILGenerator generator, MethodInfo method, int paramsCount)
         {
-            generator.EmitCallWithParams(il => il.EmitCall(OpCodes.Call, method, null), paramsCount);
+            generator.EmitCallWithParams(il => il.EmitCall(OpCodes.Callvirt, method, null), paramsCount);
         }
 
         public static void EmitCallWithParams(this ILGenerator generator, ConstructorInfo constructor, int paramsCount)

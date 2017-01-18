@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
@@ -37,7 +36,7 @@ namespace RemoteClient.Core
             tb.AddInterfaceImplementation(typeof(T));
 
             
-                var taskTypeInfo = typeof(Task).GetTypeInfo();
+            var taskTypeInfo = typeof(Task).GetTypeInfo();
             foreach (var interfaceMethod in typeInfo.GetAllMethods())
             {
                 if (taskTypeInfo.IsAssignableFrom(interfaceMethod.ReturnType))
@@ -59,10 +58,12 @@ namespace RemoteClient.Core
 
         private static void ImplementProcessorProxyMethodCall(TypeBuilder tb, MethodInfo interfaceMethod)
         {
-            var parameters = GetLamdaParameters(interfaceMethod);
-            var expr = Expression.Lambda(Expression.Call(Expression.Field(parameters[0], "Processor"), interfaceMethod), parameters);
             var implementation = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual);
-            implementation.GetILGenerator().Emit(OpCodes.Ret);
+            var il = implementation.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, typeof(AsyncClientBase).GetTypeInfo().GetField("Processor", BindingFlags.Instance | BindingFlags.NonPublic));
+            il.EmitCallWithParams(interfaceMethod, interfaceMethod.GetParameters().Length);
+            il.Emit(OpCodes.Ret);
             tb.DefineMethodOverride(implementation, interfaceMethod);
         }
 
@@ -81,7 +82,6 @@ namespace RemoteClient.Core
             il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Newobj, bodyDict.LocalType.GetTypeInfo().GetConstructor(Type.EmptyTypes));
             il.Emit(OpCodes.Stloc_1);
-            il.Emit(OpCodes.Ldloc_0);
             var parameters = interfaceMethod.GetParameters();
             foreach (var parameter in parameters)
             {
@@ -91,7 +91,7 @@ namespace RemoteClient.Core
                 il.EmitLdarg(parameter.Position + 1);
                 if (parameter.ParameterType.GetTypeInfo().IsValueType)
                 {
-                    il.Emit(OpCodes.Box);
+                    il.Emit(OpCodes.Box, parameter.ParameterType);
                 }
                 il.Emit(OpCodes.Callvirt, dictionaryAdd);
             }
@@ -116,27 +116,6 @@ namespace RemoteClient.Core
         {
             var type = typeof (IAsyncRequestProcessor).GetTypeInfo();
             return interfaceMethod.ReturnType.GenericTypeArguments.Length == 0 ? type.GetMethod("ExecuteAsync") : type.GetMethod("GetResultAsync").MakeGenericMethod(interfaceMethod.ReturnType.GenericTypeArguments);
-        }
-
-        private static ParameterExpression[] GetLamdaParameters(MethodInfo interfaceMethod)
-        {
-            var parameterInfos = interfaceMethod.GetParameters();
-            var parameters = new ParameterExpression[parameterInfos.Length + 1];
-            parameters[0] = Expression.Parameter(typeof(AsyncClientBase), "this");
-            for (int i = 0; i < parameterInfos.Length; i++)
-            {
-                parameters[i + 1] = Expression.Parameter(parameterInfos[i].ParameterType, parameterInfos[i].Name);
-            }
-            return parameters;
-        }
-
-        private static Expression GetCreateDesriptorExpression(WcfOperationDescriptor descriptor)
-        {
-            return Expression.New(typeof(WcfOperationDescriptor).GetTypeInfo().DeclaredConstructors.First(),
-                Expression.Constant(descriptor.UriTemplate),
-                Expression.Constant(descriptor.Method),
-                Expression.Constant(descriptor.RequestFormat),
-                Expression.Constant(descriptor.ResponseFormat));
         }
     }
 }
