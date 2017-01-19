@@ -10,10 +10,6 @@ namespace RemoteClient.Core.Helpers
 {
     internal static class EmitHelper
     {
-        /// <summary>Creates one constructor for each public constructor in the base class. Each constructor simply
-        /// forwards its arguments to the base constructor, and matches the base constructor's signature.
-        /// Supports optional values, and custom attributes on constructors and parameters.
-        /// Does not support n-ary (variadic) constructors</summary>
         public static void CreatePassThroughConstructors<T>(this TypeBuilder builder)
         {
             foreach (var constructor in typeof(T).GetTypeInfo().DeclaredConstructors)
@@ -25,17 +21,15 @@ namespace RemoteClient.Core.Helpers
                 }
 
                 var parameterTypes = parameters.Select(p => p.ParameterType).ToArray();
-                var requiredCustomModifiers = parameters.Select(p => p.GetRequiredCustomModifiers()).ToArray();
-                var optionalCustomModifiers = parameters.Select(p => p.GetOptionalCustomModifiers()).ToArray();
 
-                var ctor = builder.DefineConstructor(MethodAttributes.Public, constructor.CallingConvention, parameterTypes, requiredCustomModifiers, optionalCustomModifiers);
+                var ctor = builder.DefineConstructor(MethodAttributes.Public, constructor.CallingConvention, parameterTypes);
                 int iSequence = 1;
                 foreach (var parameter in parameters)
                 {
                     var parameterBuilder = ctor.DefineParameter(iSequence++, parameter.Attributes, parameter.Name);
                     if (parameter.Attributes.HasFlag(ParameterAttributes.HasDefault))
                     {
-                        parameterBuilder.SetConstant(parameter.RawDefaultValue);
+                        parameterBuilder.SetConstant(parameter.DefaultValue);
                     }
 
                     foreach (var attribute in BuildCustomAttributes(parameter.CustomAttributes))
@@ -58,7 +52,7 @@ namespace RemoteClient.Core.Helpers
             var backingField = tb.DefineField($"<{propertyName}>k__BackingField", propertyType, FieldAttributes.Private);
             var propertyBuilder = tb.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
 
-            var getMethod = tb.DefineMethod("get_" + propertyName, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.SpecialName | MethodAttributes.HideBySig, propertyType, Type.EmptyTypes);
+            var getMethod = tb.DefineMethod("get_" + propertyName, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.SpecialName | MethodAttributes.HideBySig, propertyType, Empty<Type>.Array);
             var getGenerator = getMethod.GetILGenerator();
             getGenerator.Emit(OpCodes.Ldarg_0);
             getGenerator.Emit(OpCodes.Ldfld, backingField);
@@ -176,7 +170,7 @@ namespace RemoteClient.Core.Helpers
                     }
                 }
 
-                return new CustomAttributeBuilder(attribute.Constructor, attributeArgs, properties.ToArray(), propertyValues.ToArray(), fields.ToArray(), fieldValues.ToArray());
+                return new CustomAttributeBuilder(attribute.AttributeType.GetTypeInfo().DeclaredConstructors.First(), attributeArgs, properties.ToArray(), propertyValues.ToArray(), fields.ToArray(), fieldValues.ToArray());
             });
         }
 
@@ -192,7 +186,7 @@ namespace RemoteClient.Core.Helpers
 
             if (sourceArray.Count == 0)
             {
-                return Array.Empty<object>();
+                return Empty<object>.Array;
             }
 
             var underlyingType = sourceArray[0].ArgumentType; // type to be used for arguments
@@ -209,8 +203,8 @@ namespace RemoteClient.Core.Helpers
                 argList.Add(typedArgument.Value);
 
             }
-            var toArrayMethod = listType.GetTypeInfo().GetMethod("ToArray");
-            return toArrayMethod.Invoke(argList, Array.Empty<object>());
+            var toArrayMethod = listType.GetRuntimeMethod("ToArray", Empty<Type>.Array);
+            return toArrayMethod.Invoke(argList, Empty<object>.Array);
         }
     }
 }

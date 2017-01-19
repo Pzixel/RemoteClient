@@ -20,7 +20,7 @@ namespace RemoteClient.Core
 
         public static T New(IAsyncRequestProcessor processor)
         {
-            return (T) Activator.CreateInstance(ClientType, processor);
+            return (T)Activator.CreateInstance(ClientType, processor);
         }
 
         private static Type CreateType()
@@ -35,11 +35,11 @@ namespace RemoteClient.Core
             tb.CreatePassThroughConstructors<AsyncClientBase>();
             tb.AddInterfaceImplementation(typeof(T));
 
-            
+
             var taskTypeInfo = typeof(Task).GetTypeInfo();
-            foreach (var interfaceMethod in typeInfo.GetAllMethods())
+            foreach (var interfaceMethod in typeof(T).GetAllMethods())
             {
-                if (taskTypeInfo.IsAssignableFrom(interfaceMethod.ReturnType))
+                if (taskTypeInfo.IsAssignableFrom(interfaceMethod.ReturnType.GetTypeInfo()))
                 {
                     ImplementMethod(tb, interfaceMethod);
                 }
@@ -61,7 +61,7 @@ namespace RemoteClient.Core
             var implementation = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual);
             var il = implementation.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldfld, typeof(AsyncClientBase).GetTypeInfo().GetField("Processor", BindingFlags.Instance | BindingFlags.NonPublic));
+            il.Emit(OpCodes.Ldfld, typeof(AsyncClientBase).GetRuntimeFields().First(x => x.Name == "Processor"));
             il.EmitCallWithParams(interfaceMethod, interfaceMethod.GetParameters().Length);
             il.Emit(OpCodes.Ret);
             tb.DefineMethodOverride(implementation, interfaceMethod);
@@ -75,12 +75,12 @@ namespace RemoteClient.Core
             var il = implementation.GetILGenerator();
             var uriDict = il.DeclareLocal(typeof(Dictionary<string, object>));
             var bodyDict = il.DeclareLocal(typeof(Dictionary<string, object>));
-            var dictionaryAdd = typeof(Dictionary<string, object>).GetTypeInfo().GetMethod("Add");
+            var dictionaryAdd = typeof(Dictionary<string, object>).GetRuntimeMethod("Add", new[] { typeof(string), typeof(object) });
             var request = il.DeclareLocal(ReflectionHelper.GetPropertyInterfaceImplementation<IRemoteRequest>().AsType());
-            var reqMethod = GetRequestMethod(interfaceMethod);
-            il.Emit(OpCodes.Newobj, uriDict.LocalType.GetTypeInfo().GetConstructor(Type.EmptyTypes));
+            var reqMethod = AsyncRequestProcessorResolver.GetRequestMethod(interfaceMethod);
+            il.Emit(OpCodes.Newobj, uriDict.LocalType.GetTypeInfo().DeclaredConstructors.First(x => x.GetParameters().Length == 0));
             il.Emit(OpCodes.Stloc_0);
-            il.Emit(OpCodes.Newobj, bodyDict.LocalType.GetTypeInfo().GetConstructor(Type.EmptyTypes));
+            il.Emit(OpCodes.Newobj, bodyDict.LocalType.GetTypeInfo().DeclaredConstructors.First(x => x.GetParameters().Length == 0));
             il.Emit(OpCodes.Stloc_1);
             var parameters = interfaceMethod.GetParameters();
             foreach (var parameter in parameters)
@@ -110,12 +110,6 @@ namespace RemoteClient.Core
             il.Emit(OpCodes.Callvirt, reqMethod);
             il.Emit(OpCodes.Ret);
             tb.DefineMethodOverride(implementation, interfaceMethod);
-        }
-
-        private static MethodInfo GetRequestMethod(MethodInfo interfaceMethod)
-        {
-            var type = typeof (IAsyncRequestProcessor).GetTypeInfo();
-            return interfaceMethod.ReturnType.GenericTypeArguments.Length == 0 ? type.GetMethod("ExecuteAsync") : type.GetMethod("GetResultAsync").MakeGenericMethod(interfaceMethod.ReturnType.GenericTypeArguments);
         }
     }
 }

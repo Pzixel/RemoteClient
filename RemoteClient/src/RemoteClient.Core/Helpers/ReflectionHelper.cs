@@ -40,9 +40,9 @@ namespace RemoteClient.Core.Helpers
             return new WcfOperationDescriptor(uriTemplate, method, requestFormat, responseFormat);
         }
 
-        public static IEnumerable<MethodInfo> GetAllMethods(this TypeInfo typeInfo)
+        public static IEnumerable<MethodInfo> GetAllMethods(this Type type)
         {
-            return typeInfo.GetMethods().Concat(typeInfo.GetInterfaces().SelectMany(x => x.GetTypeInfo().GetAllMethods()));
+            return type.GetRuntimeMethods().Concat(type.GetTypeInfo().ImplementedInterfaces.SelectMany(x => x.GetAllMethods()));
         }
 
         private static class InterfaceImplementator<T> where T: class 

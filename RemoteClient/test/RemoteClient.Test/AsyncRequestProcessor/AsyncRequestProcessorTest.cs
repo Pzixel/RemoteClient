@@ -10,7 +10,7 @@ namespace RemoteClient.Test.AsyncRequestProcessor
     public class AsyncRequestProcessorTest
     {
         [Fact]
-        public async Task Sample()
+        public async Task SampleAsync()
         {
             var asyncRequestProcessor = new AsyncProcessorSample();
             using (var task = ServiceClient<ISample>.New(asyncRequestProcessor))
