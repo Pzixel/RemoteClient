@@ -4,13 +4,13 @@ namespace RemoteClient.Core.Helpers
 {
     internal struct AutoPropertyInfo
     {
-        public PropertyInfo PropertyInfo { get;}
-        public FieldInfo FieldInfo { get;}
+        public PropertyInfo PropertyInfo { get; }
+        public FieldInfo BackingFieldInfo { get; }
 
-        public AutoPropertyInfo(PropertyInfo propertyInfo, FieldInfo fieldInfo)
+        public AutoPropertyInfo(PropertyInfo propertyInfo, FieldInfo backingFieldInfo)
         {
             PropertyInfo = propertyInfo;
-            FieldInfo = fieldInfo;
+            BackingFieldInfo = backingFieldInfo;
         }
     }
 }

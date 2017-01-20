@@ -81,7 +81,7 @@ namespace RemoteClient.Core.Helpers
                     }
                     ctor.EmitLdarg(0);
                     ctor.EmitLdarg(i++);
-                    ctor.Emit(OpCodes.Stfld, prop.FieldInfo);
+                    ctor.Emit(OpCodes.Stfld, prop.BackingFieldInfo);
                 }
                 ctor.Emit(OpCodes.Ret);
                 tb.AddInterfaceImplementation(interfaceType);

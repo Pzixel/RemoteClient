@@ -6,6 +6,6 @@ namespace RemoteClient.Core
     {
         WcfOperationDescriptor Descriptor { get; }
         IReadOnlyDictionary<string, object> QueryStringParameters { get; }
-        IReadOnlyDictionary<string, object> BodyPrameters { get; }
+        IReadOnlyDictionary<string, object> BodyParameters { get; }
     }
 }

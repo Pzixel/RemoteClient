@@ -29,9 +29,9 @@ namespace RemoteClient.Test.AsyncRequestProcessor
                 Assert.Equal(intSample, request.QueryStringParameters["foo"]);
                 Assert.True(request.QueryStringParameters.ContainsKey("bar"));
                 Assert.Equal(guidSample, request.QueryStringParameters["bar"]);
-                Assert.True(request.BodyPrameters.ContainsKey("someLoad"));
+                Assert.True(request.BodyParameters.ContainsKey("someLoad"));
 
-                var dict = request.BodyPrameters["someLoad"] as IReadOnlyDictionary<string, double>;
+                var dict = request.BodyParameters["someLoad"] as IReadOnlyDictionary<string, double>;
                 Assert.NotNull(dict);
                 Assert.True(dict.SequenceEqual(dictSample));
             }
