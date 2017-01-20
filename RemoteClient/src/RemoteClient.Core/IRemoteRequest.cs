@@ -4,7 +4,7 @@ namespace RemoteClient.Core
 {
     public interface IRemoteRequest
     {
-        WcfOperationDescriptor Descriptor { get; }
+        RemoteOperationDescriptor Descriptor { get; }
         IReadOnlyDictionary<string, object> QueryStringParameters { get; }
         IReadOnlyDictionary<string, object> BodyParameters { get; }
     }

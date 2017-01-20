@@ -99,7 +99,7 @@ namespace RemoteClient.Core
             il.Emit(OpCodes.Ldstr, wcfOperationDescriptor.Method);
             il.Emit(wcfOperationDescriptor.RequestFormat == 0 ? OpCodes.Ldc_I4_0 : OpCodes.Ldc_I4_1);
             il.Emit(wcfOperationDescriptor.ResponseFormat == 0 ? OpCodes.Ldc_I4_0 : OpCodes.Ldc_I4_1);
-            il.Emit(OpCodes.Newobj, typeof(WcfOperationDescriptor).GetTypeInfo().DeclaredConstructors.Single());
+            il.Emit(OpCodes.Newobj, typeof(RemoteOperationDescriptor).GetTypeInfo().DeclaredConstructors.Single());
             il.Emit(OpCodes.Ldloc_0);
             il.Emit(OpCodes.Ldloc_1);
             il.Emit(OpCodes.Newobj, request.LocalType.GetTypeInfo().DeclaredConstructors.Single(x => x.GetParameters().Length > 0));

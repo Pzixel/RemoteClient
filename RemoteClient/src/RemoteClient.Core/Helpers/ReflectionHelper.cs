@@ -18,7 +18,7 @@ namespace RemoteClient.Core.Helpers
         private const string WebGetFullName = "System.ServiceModel.Web.WebGetAttribute";
         private const string WebInvokeFullName = "System.ServiceModel.Web.WebInvokeAttribute";
 
-        public static WcfOperationDescriptor GetUriTemplate(MethodInfo methodInfo)
+        public static RemoteOperationDescriptor GetUriTemplate(MethodInfo methodInfo)
         {
             var uriAttribute = methodInfo.GetCustomAttributes().FirstOrDefault(x =>
             {
@@ -37,7 +37,7 @@ namespace RemoteClient.Core.Helpers
             var requestFormat = (OperationWebMessageFormat) attributeType.GetDeclaredProperty("RequestFormat").GetValue(uriAttribute);
             var responseFormat = (OperationWebMessageFormat) attributeType.GetDeclaredProperty("ResponseFormat").GetValue(uriAttribute);
 
-            return new WcfOperationDescriptor(uriTemplate, method, requestFormat, responseFormat);
+            return new RemoteOperationDescriptor(uriTemplate, method, requestFormat, responseFormat);
         }
 
         public static IEnumerable<MethodInfo> GetAllMethods(this Type type)
