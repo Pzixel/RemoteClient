@@ -25,19 +25,19 @@ namespace RemoteClient.Core
 
         private static Type CreateType()
         {
-            var typeName = typeof(T).Name;
-            var typeInfo = typeof(T).GetTypeInfo();
-            if (!typeInfo.IsInterface)
+            var interfaceType = typeof(T);
+            var typeName = interfaceType.Name;
+            if (!interfaceType.GetTypeInfo().IsInterface)
                 throw new Exception($"{typeName} is not an interface!");
 
             var tb = ReflectionHelper.Builder.DefineType($"<{typeName}>__Client", TypeAttributes.Class | TypeAttributes.Sealed);
             tb.SetParent(typeof(AsyncClientBase));
             tb.CreatePassThroughConstructors<AsyncClientBase>();
-            tb.AddInterfaceImplementation(typeof(T));
+            tb.AddInterfaceImplementation(interfaceType);
 
 
             var taskTypeInfo = typeof(Task).GetTypeInfo();
-            foreach (var interfaceMethod in typeof(T).GetAllMethods())
+            foreach (var interfaceMethod in interfaceType.GetAllMethods())
             {
                 if (taskTypeInfo.IsAssignableFrom(interfaceMethod.ReturnType.GetTypeInfo()))
                 {

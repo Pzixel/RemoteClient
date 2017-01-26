@@ -42,7 +42,9 @@ namespace RemoteClient.Core.Helpers
 
         public static IEnumerable<MethodInfo> GetAllMethods(this Type type)
         {
-            return type.GetRuntimeMethods().Concat(type.GetTypeInfo().ImplementedInterfaces.SelectMany(x => x.GetAllMethods()));
+            var thisMethods = type.GetRuntimeMethods();
+            var baseMethods = type.GetTypeInfo().ImplementedInterfaces.SelectMany(x => x.GetRuntimeMethods());
+            return thisMethods.Concat(baseMethods);
         }
 
         private static class InterfaceImplementator<T> where T: class 

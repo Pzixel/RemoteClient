@@ -75,6 +75,7 @@
     <Compile Include="WCF\ServiceAttribute.cs" />
     <Compile Include="WCF\ServiceManager.cs" />
     <Compile Include="WCF\TestClasses\Constant.cs" />
+    <Compile Include="WCF\TestClasses\ISampleBaseService.cs" />
     <Compile Include="WCF\TestClasses\ISampleClient.cs" />
     <Compile Include="WCF\TestClasses\ISampleService.cs" />
     <Compile Include="WCF\TestClasses\SampleClient.cs" />
