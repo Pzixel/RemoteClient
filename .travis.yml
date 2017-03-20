@@ -1,0 +1,7 @@
+language: csharp
+solution: RemoteClient.sln
+dist: trusty
+sudo: required
+mono: none
+dotnet: 1.0.0
+script: cd "RemoteClient" && dotnet restore && dotnet build
