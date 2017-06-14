@@ -2,7 +2,7 @@
 
 namespace RemoteClient.Core
 {
-    public class ClientGenerationException : Exception
+    public class ClientGenerationException : InvalidOperationException
     {
         public ClientGenerationException()
         {

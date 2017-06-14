@@ -16,11 +16,13 @@ namespace RemoteClient.Core
     public static class ServiceClient<T> where T : IDisposable
     {
         [SuppressMessage("ReSharper", "StaticMemberInGenericType")]
-        private static readonly Type ClientType = CreateType();
+        private static readonly Lazy<Type> ClientType = new Lazy<Type>(CreateType);
 
         public static T New(IAsyncRequestProcessor processor)
         {
-            return (T)Activator.CreateInstance(ClientType, processor);
+            if (processor == null)
+                throw new ArgumentNullException(nameof(processor));
+            return (T)Activator.CreateInstance(ClientType.Value, processor);
         }
 
         private static Type CreateType()

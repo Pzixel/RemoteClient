@@ -2,7 +2,9 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using RemoteClient.Core;
 using RemoteClient.Core.Helpers;
+using RemoteClient.Test.AsyncRequestProcessor;
 using Xunit;
 
 namespace RemoteClient.Test.Core
@@ -36,8 +38,7 @@ namespace RemoteClient.Test.Core
                 }
             });
         }
-
-
+        
         [Fact]
         public void ImplementatorTest()
         {
@@ -51,6 +52,19 @@ namespace RemoteClient.Test.Core
             Assert.Equal(defaultInstance.Y, 0);
             Assert.Equal(instance.X, 10);
             Assert.Equal(instance.Y, 20);
+        }
+        
+        [Fact]
+        public void InvalidInterfaceTest()
+        {
+            var clientGenerationException = Assert.Throws<ClientGenerationException>(() => ServiceClient<IInvalidInterface>.New(new AsyncProcessorSample()));
+            Assert.Equal("Interface contains methods with non-task return type", clientGenerationException.Message);
+        }
+        
+        [Fact]
+        public void NullProcessorTest()
+        {
+            Assert.Throws<ArgumentNullException>("processor", () => ServiceClient<IValidInterface>.New(null));
         }
     }
 }
